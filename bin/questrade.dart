@@ -61,6 +61,9 @@ class Questrade {
         },
       );
       var response = await http.get(uri);
+      if (response.statusCode != 200) {
+        throw "Questrade.getAccessToken - http failed with status code = ${response.statusCode}";
+      }
       var json = jsonDecode(response.body);
       return AccessToken.fromJson(json);
     }
@@ -70,7 +73,6 @@ class Questrade {
         var uri = Uri.https("api01.iq.questrade.com", "/v1/accounts");
         var response = await http.get(uri);
         var json = jsonDecode(response.body);
-        AccountType
         return [];
     }
 }
