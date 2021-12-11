@@ -9,7 +9,7 @@
             "request": "launch",
             "type": "dart",
             "program": "bin/questrade_tool.dart",
-            "arg": [
+            "args": [
                 
             ]
         }
