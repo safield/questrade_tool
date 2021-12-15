@@ -8,7 +8,10 @@ class AccessToken {
   AccessToken(this.token , this.refreshToken , this.expiredTime);
 
   static AccessToken fromJson(Map<String,dynamic> json) {
-    return AccessToken(json['access_token'] , json['refresh_token'] , json['expired_time']);
+    var accessToken =json['access_token'];
+    var refreshToken =json['refresh_token'];
+    var expiredTime =json['expired_time'];
+    return AccessToken(accessToken , refreshToken , expiredTime);
   }
 
   Map<String , dynamic> toJson() {
