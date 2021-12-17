@@ -4,21 +4,24 @@ import 'package:http/http.dart' as http;
 class AccessToken {
   final String token;
   final String refreshToken;
-  final int expiredTime;
-  AccessToken(this.token , this.refreshToken , this.expiredTime);
+  final int expiresIn;
+  final String apiServer;
+  
+  AccessToken(this.token , this.refreshToken , this.expiresIn , this.apiServer);
 
   static AccessToken fromJson(Map<String,dynamic> json) {
-    var accessToken =json['access_token'];
-    var refreshToken =json['refresh_token'];
-    var expiredTime =json['expired_time'];
-    return AccessToken(accessToken , refreshToken , expiredTime);
+    String accessToken = json['access_token'];
+    String refreshToken = json['refresh_token'];
+    int expiredTime = json['expires_in'];
+    String apiServer = Uri.parse(json['api_server']).host;
+    return AccessToken(accessToken , refreshToken , expiredTime , apiServer);
   }
 
   Map<String , dynamic> toJson() {
     return {
       "access_token": token,
       "refresh_token": refreshToken,
-      "expired_time": expiredTime.toString(),
+      "expired_time": expiresIn.toString(),
     };
   }
 }
@@ -71,9 +74,9 @@ class Questrade {
     }
 
     static Future<List<Account>> getAccounts(AccessToken accessToken) async {
-        var headers = { "Authorization": "Bearer: ${accessToken.token}"};
-        var uri = Uri.https("api01.iq.questrade.com", "/v1/accounts");
-        var response = await http.get(uri);
+        var headers = { "Authorization": "Bearer ${accessToken.token}"};
+        var uri = Uri.https(accessToken.apiServer, "/v1/accounts");
+        var response = await http.get(uri , headers: headers);
         var json = jsonDecode(response.body);
         return [];
     }

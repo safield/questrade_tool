@@ -12,6 +12,9 @@ void main(List<String> arguments) async {
   print("New Refresh Token:");
   print(newRefreshToken);
   print("complete!");
+
+  var accounts =  await Questrade.getAccounts(accessToken);
+  print(accounts.toString());
 }
 
 
