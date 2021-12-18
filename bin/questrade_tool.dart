@@ -15,6 +15,16 @@ void main(List<String> arguments) async {
 
   var accounts =  await Questrade.getAccounts(accessToken);
   print(accounts.toString());
+
+  List<Position> positions = [];
+  for (var account in accounts) {
+    var accountsPositions =  await Questrade.getPositions(accessToken , account.number);
+    positions.addAll(accountsPositions);
+  }
+
+  for (var position in positions) {
+    print(position);
+  }
 }
 
 

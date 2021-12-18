@@ -9,7 +9,7 @@ class AccessToken {
   
   AccessToken(this.token , this.refreshToken , this.expiresIn , this.apiServer);
 
-  static AccessToken fromJson(Map<String,dynamic> json) {
+  static AccessToken fromJson(Map json) {
     String accessToken = json['access_token'];
     String refreshToken = json['refresh_token'];
     int expiredTime = json['expires_in'];
@@ -45,12 +45,54 @@ enum AccountType {
 }
 
 class Account {
+  final int number;
   final AccountType type;
-  Account(this.type);
-  factory Account.fromJson(Map<String,dynamic> json) {
+  Account(this.number , this.type);
+  factory Account.fromJson(Map json) {
     var map = AccountType.values.asNameMap();
     var type = map[json['type']];
-    return Account(type!);
+    int number = int.parse(json['number']);
+    return Account(number , type!);
+  }
+}
+
+class Position {
+  String symbol;
+  int openQuantity;
+  int closedQuantity;
+  num currentPrice;
+  num closedPnl;
+  num openPnl;
+  num totalCost;
+
+  Position(
+    this.symbol,
+    this.openQuantity,
+    this.closedQuantity,
+    this.currentPrice,
+    this.closedPnl,
+    this.openPnl,
+    this.totalCost,
+  );
+
+  static Position fromJson(Map json) {
+    String symbol = json['symbol'];
+    int openQuantity = json['openQuantity'];
+    int closedQuantity = json['closedQuantity'];
+    num currentPrice = json['currentPrice'];
+    num closedPnl = json['closedPnl'];
+    num openPnl = json['openPnl'];
+    num totalCost = json['totalCost'];
+
+    return Position(
+      symbol,
+      openQuantity,
+      closedQuantity,
+      currentPrice,
+      closedPnl,
+      openPnl,
+      totalCost,
+    );
   }
 }
 
@@ -78,7 +120,26 @@ class Questrade {
         var uri = Uri.https(accessToken.apiServer, "/v1/accounts");
         var response = await http.get(uri , headers: headers);
         var json = jsonDecode(response.body);
-        return [];
+        var accountsListJson = json['accounts'];
+        List<Account> accounts = [];
+        for (var accountJson in accountsListJson) {
+          accounts.add(Account.fromJson(accountJson));
+        }
+        return accounts;
+    }
+
+
+    static Future<List<Position>> getPositions(AccessToken accessToken , int accountNumber) async {
+        var headers = { "Authorization": "Bearer ${accessToken.token}"};
+        var uri = Uri.https(accessToken.apiServer, "/v1/accounts/$accountNumber/positions");
+        var response = await http.get(uri , headers: headers);
+        var json = jsonDecode(response.body);
+        var positionsListJson = json['positions'];
+        List<Position> positions = [];
+        for (var positionJson in positionsListJson) {
+          positions.add(Position.fromJson(positionJson));
+        }
+        return positions;
     }
 }
 
