@@ -59,7 +59,6 @@ void main(List<String> arguments) async {
     String symbol = accountPositionsList.first.position.symbol;
     num currentPrice = accountPositionsList.first.position.currentPrice;
     int openQuantity = 0;
-    num closedPnl = 0;
     num openPnl = 0;
     int accounts = 0;
     for (var accountPosition in accountPositionsList) {
@@ -68,7 +67,6 @@ void main(List<String> arguments) async {
       assert(position.symbol == symbol);
       assert(position.currentPrice == currentPrice);
       openQuantity += position.openQuantity;
-      closedPnl += position.closedPnl;
       openPnl += position.openPnl;
     }
 
@@ -85,6 +83,10 @@ void main(List<String> arguments) async {
   summaries.sort((a , b) =>  b.portfolioPercentage.compareTo(a.portfolioPercentage));
 
   for (var summary in summaries) {
-    print("${summary.symbol} currentPrice=${summary.currentPrice} quantity=${summary.openQuantity} openPnl=${summary.openPnl} totalValue=${summary.totalValue} portfolioPecentage=${summary.portfolioPercentage.toStringAsFixed(2)} accounts=${summary.accounts}");
+    print("${summary.symbol} ${summary.portfolioPercentage.toStringAsFixed(2)}%");
+  }
+  print("");
+  for (var summary in summaries) {
+    print("${summary.symbol} currentPrice=${summary.currentPrice} quantity=${summary.openQuantity} openPnl=${summary.openPnl.toStringAsFixed(2)} totalValue=${summary.totalValue.toStringAsFixed(2)} portfolioPecentage=${summary.portfolioPercentage.toStringAsFixed(2)} accounts=${summary.accounts}");
   }
 }
