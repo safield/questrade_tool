@@ -96,6 +96,27 @@ class Position {
   }
 }
 
+enum Currency {
+  CAD,
+  USD,
+}
+
+class Balance {
+  final Currency currency;
+  num cash;
+  num marketValue;
+  Balance(this.currency , this.cash , this.marketValue);
+
+  static Balance fromJson(Map json) {
+    var map = Currency.values.asNameMap();
+    var currencyStr = json['currency'];
+    var currency = map[currencyStr];
+    var cash = json['cash'];
+    var marketValue = json['marketValue'];
+    return Balance(currency!, cash, marketValue);
+  }
+}
+
 class Questrade {
     static Future<AccessToken> getAccessToken(String refreshToken) async {
       // var uri = Uri.parse("https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=$refreshToken");
@@ -140,6 +161,19 @@ class Questrade {
           positions.add(Position.fromJson(positionJson));
         }
         return positions;
+    }
+
+    static Future<List<Balance>> getCombinedBalances(AccessToken accessToken , int accountNumber) async {
+        var headers = { "Authorization": "Bearer ${accessToken.token}"};
+        var uri = Uri.https(accessToken.apiServer, "/v1/accounts/$accountNumber/balances");
+        var response = await http.get(uri , headers: headers);
+        var json = jsonDecode(response.body);
+        var balancesListJson = json['combinedBalances'];
+        List<Balance> balances = [];
+        for (var balanceJson in balancesListJson) {
+          balances.add(Balance.fromJson(balanceJson));
+        }
+        return balances;
     }
 }
 

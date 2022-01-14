@@ -27,6 +27,10 @@ class PositionSummary {
   });
 }
 
+String fmtMny(num value) {
+  return "\$${value.toStringAsFixed(2)}";
+}
+
 void main(List<String> arguments) async {
   if (arguments.length != 1) {
     print("ERROR: expecting a single argument that contains the refresh token");
@@ -36,15 +40,20 @@ void main(List<String> arguments) async {
   var newRefreshToken = accessToken.refreshToken;
 
   print("New Refresh Token:");
-  print(newRefreshToken);
-  print("complete!");
+  print(newRefreshToken+'\n');
 
   var accounts = await Questrade.getAccounts(accessToken);
-  print(accounts.toString());
   double portfolioValue = 0.0;
+  num totalValue = 0;
 
   Map<String, List<AccountPosition>> positionsSummary = {};
   for (var account in accounts) {
+    var balances = await Questrade.getCombinedBalances(accessToken , account.number);
+    var cadBalance = balances.firstWhere((element) => element.currency == Currency.CAD);
+    var totalAccountValue = cadBalance.cash + cadBalance.marketValue;
+    print("${account.type} Cash:${fmtMny(cadBalance.cash)} Equity:${fmtMny(cadBalance.marketValue)} Total:${fmtMny(totalAccountValue)}");
+    totalValue += totalAccountValue;
+
     var positions = await Questrade.getPositions(accessToken, account.number);
     for (var position in positions) {
       portfolioValue += position.currentPrice * position.openQuantity;
@@ -52,6 +61,8 @@ void main(List<String> arguments) async {
       positionSummary.add(AccountPosition(account, position));
     }
   }
+
+  print("Total value: ${fmtMny(totalValue)}\n");
 
   List<PositionSummary> summaries = [];
 
@@ -81,6 +92,8 @@ void main(List<String> arguments) async {
   }
 
   summaries.sort((a , b) =>  b.portfolioPercentage.compareTo(a.portfolioPercentage));
+
+  print("Calculated Total Equity Value: $portfolioValue");
 
   for (var summary in summaries) {
     print("${summary.symbol} ${summary.portfolioPercentage.toStringAsFixed(2)}%");
