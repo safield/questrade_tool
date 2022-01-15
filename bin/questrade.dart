@@ -56,8 +56,21 @@ class Account {
   }
 }
 
+class Symbol {
+  String name;
+  String currency;
+  Symbol(this.name , this.currency);
+
+  static Symbol fromJson(Map json) {
+    var name = json['name'];
+    var currency = json['currency'];
+    return Symbol(name, currency);
+  }
+}
+
 class Position {
   String symbol;
+  int symbolId;
   int openQuantity;
   int closedQuantity;
   num currentPrice;
@@ -67,6 +80,7 @@ class Position {
 
   Position(
     this.symbol,
+    this.symbolId,
     this.openQuantity,
     this.closedQuantity,
     this.currentPrice,
@@ -77,6 +91,7 @@ class Position {
 
   static Position fromJson(Map json) {
     String symbol = json['symbol'];
+    int symbolId = json['symbolId'];
     int openQuantity = json['openQuantity'];
     int closedQuantity = json['closedQuantity'];
     num currentPrice = json['currentPrice'];
@@ -86,6 +101,7 @@ class Position {
 
     return Position(
       symbol,
+      symbolId,
       openQuantity,
       closedQuantity,
       currentPrice,
@@ -164,6 +180,19 @@ class Questrade {
     }
 
     static Future<List<Balance>> getCombinedBalances(AccessToken accessToken , int accountNumber) async {
+        var headers = { "Authorization": "Bearer ${accessToken.token}"};
+        var uri = Uri.https(accessToken.apiServer, "/v1/accounts/$accountNumber/balances");
+        var response = await http.get(uri , headers: headers);
+        var json = jsonDecode(response.body);
+        var balancesListJson = json['combinedBalances'];
+        List<Balance> balances = [];
+        for (var balanceJson in balancesListJson) {
+          balances.add(Balance.fromJson(balanceJson));
+        }
+        return balances;
+    }
+
+        static Future<Symbol> getSymbol(AccessToken accessToken , int accountNumber) async {
         var headers = { "Authorization": "Bearer ${accessToken.token}"};
         var uri = Uri.https(accessToken.apiServer, "/v1/accounts/$accountNumber/balances");
         var response = await http.get(uri , headers: headers);
