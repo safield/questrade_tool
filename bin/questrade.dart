@@ -57,14 +57,16 @@ class Account {
 }
 
 class Symbol {
+  int id;
   String name;
   String currency;
-  Symbol(this.name , this.currency);
+  Symbol(this.id , this.name , this.currency);
 
   static Symbol fromJson(Map json) {
-    var name = json['name'];
+    var id = json['symbolId'];
+    var name = json['symbol'];
     var currency = json['currency'];
-    return Symbol(name, currency);
+    return Symbol(id , name, currency);
   }
 }
 
@@ -192,17 +194,12 @@ class Questrade {
         return balances;
     }
 
-        static Future<Symbol> getSymbol(AccessToken accessToken , int accountNumber) async {
+        static Future<Symbol> getSymbol(AccessToken accessToken , int symbolId) async {
         var headers = { "Authorization": "Bearer ${accessToken.token}"};
-        var uri = Uri.https(accessToken.apiServer, "/v1/accounts/$accountNumber/balances");
+        var uri = Uri.https(accessToken.apiServer, "/v1/symbols/$symbolId");
         var response = await http.get(uri , headers: headers);
         var json = jsonDecode(response.body);
-        var balancesListJson = json['combinedBalances'];
-        List<Balance> balances = [];
-        for (var balanceJson in balancesListJson) {
-          balances.add(Balance.fromJson(balanceJson));
-        }
-        return balances;
+        return Symbol.fromJson(json['symbols'].first);
     }
 }
 
