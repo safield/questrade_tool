@@ -76,9 +76,9 @@ class Position {
   int openQuantity;
   int closedQuantity;
   num currentPrice;
-  num closedPnl;
-  num openPnl;
-  num totalCost;
+  num? closedPnl;
+  num? openPnl;
+  num? totalCost;
 
   Position(
     this.symbol,
@@ -97,9 +97,9 @@ class Position {
     int openQuantity = json['openQuantity'];
     int closedQuantity = json['closedQuantity'];
     num currentPrice = json['currentPrice'];
-    num closedPnl = json['closedPnl'];
-    num openPnl = json['openPnl'];
-    num totalCost = json['totalCost'];
+    num? closedPnl = json['closedPnl'];
+    num? openPnl = json['openPnl'];
+    num? totalCost = json['totalCost'];
 
     return Position(
       symbol,

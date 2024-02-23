@@ -13,8 +13,11 @@ class PositionSummary {
   final num currentPriceInCAD;
   final int openQuantity;
   final num openPnl;
+  final num closedPnl;
   final int accounts;
   final double totalPortfolioValue;
+  final bool isOpen;
+
 
   num get totalValue => openQuantity * currentPriceInCAD;
   num get portfolioPercentage => totalValue / totalPortfolioValue * 100;
@@ -24,8 +27,10 @@ class PositionSummary {
     required this.currentPriceInCAD,
     required this.openQuantity,
     required this.openPnl,
+    required this.closedPnl,
     required this.accounts,
     required this.totalPortfolioValue,
+    required this.isOpen,
   });
 }
 
@@ -85,14 +90,21 @@ void main(List<String> arguments) async {
     num currentPrice = accountPositionsList.first.position.currentPrice;
     int openQuantity = 0;
     num openPnl = 0;
+    num closedPnl = 0;
     int accounts = 0;
+    bool isOpen = false;
     for (var accountPosition in accountPositionsList) {
       var position = accountPosition.position;
       accounts++;
       assert(position.symbol == symbol);
       assert(position.currentPrice == currentPrice);
       openQuantity += position.openQuantity;
-      openPnl += position.openPnl;
+      var openPnlNullable = position.openPnl;
+      if (openPnlNullable != null) {
+        openPnl += openPnlNullable;
+        isOpen = true;
+      }
+      closedPnl += position.closedPnl ?? 0;
     }
 
     var fxRate = accountPositionsList.first.isUSD ? usdToCadRate : 1.0;
@@ -104,18 +116,29 @@ void main(List<String> arguments) async {
       openPnl: openPnl,
       accounts: accounts,
       totalPortfolioValue: portfolioValue,
+      closedPnl: closedPnl,
+      isOpen: isOpen,
     ));
   }
 
   summaries.sort((a , b) =>  b.portfolioPercentage.compareTo(a.portfolioPercentage));
 
+  var openSummaries = summaries.where((x)=>x.isOpen).toList();
+  var closedSummaries = summaries.where((x)=>!x.isOpen).toList();
+
   print("Calculated total equity via real time exchange rate: ${fmtMny(portfolioValue)}");
 
-  for (var summary in summaries) {
+  for (var summary in openSummaries) {
     print("${summary.symbol} ${summary.portfolioPercentage.toStringAsFixed(2)}%");
   }
-  print("");
+  print("\nOpen Positions:");
+  printSummaries(openSummaries);
+  print("\nClosed Positions:");
+  printSummaries(closedSummaries);
+}
+
+void printSummaries(List<PositionSummary> summaries) {
   for (var summary in summaries) {
-    print("${summary.symbol} currentPrice=${summary.currentPriceInCAD} quantity=${summary.openQuantity} openPnl=${summary.openPnl.toStringAsFixed(2)} totalValue=${summary.totalValue.toStringAsFixed(2)} portfolioPecentage=${summary.portfolioPercentage.toStringAsFixed(2)} accounts=${summary.accounts}");
+    print("${summary.symbol} currentPrice=${summary.currentPriceInCAD} quantity=${summary.openQuantity} openPnl=${summary.openPnl.toStringAsFixed(2)} closedPnl=${summary.closedPnl.toStringAsFixed(2)} totalValue=${summary.totalValue.toStringAsFixed(2)} portfolioPecentage=${summary.portfolioPercentage.toStringAsFixed(2)} accounts=${summary.accounts}");
   }
 }
