@@ -40,7 +40,12 @@ String fmtMny(num value) {
 
 void main(List<String> arguments) async {
   var usdToCadRate = await Valet.getUsdToCadRate();
+  if (usdToCadRate == null) {
+    print("ERROR: Unable to fetch currency rate.");
+    usdToCadRate = 0;
+  }
   print("USD to CAD = $usdToCadRate");
+
   if (arguments.length != 1) {
     print("ERROR: expecting a single argument that contains the refresh token");
   }
